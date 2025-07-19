@@ -6,30 +6,32 @@ from .models import LinkChain, Product
 
 @admin.action(description='Очистить задолженность')
 def clear_debt(modeladmin, request, queryset):
-  queryset.update(debt=0)
+    '''Обнуляет задолженность у выбранных звеньев'''
+    queryset.update(debt=0)
 
 
 @admin.register(LinkChain)
 class LinkChainAdmin(admin.ModelAdmin):
+    '''Админка модели LinkChain'''
     list_display = (
         'name',
         'email',
         'country',
         'city',
+        'street',
+        'house_number',
         'supplier_link',
         'debt',
         'created_at',
     )
-    list_filter = ('city',)  # Фильтр по названию города
-    search_fields = ('name', 'email')  # Поиск по названию и email
+    list_filter = ('city',)
+    search_fields = ('name', 'email')
     list_select_related = ('supplier',)
-    # Оптимизация: заранее загружает поставщика (ForeignKey)
     actions = [clear_debt]
-    # Добавляет в админку действие "Очистить задолженность"
 
-
-    @admin.display(description='Поставщик')  # Заголовок колонки
+    @admin.display(description='Поставщик')
     def supplier_link(self, obj):
+        '''Возвращает HTML-ссылку на поставщика'''
         if obj.supplier:
             url = f'/admin/chain/linkchain/{obj.supplier.id}/change/'
             return format_html('<a href="{}">{}</a>', url, obj.supplier.name)
@@ -38,6 +40,7 @@ class LinkChainAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    '''Админка модели Product'''
     list_display = (
         'name',
         'model',
@@ -46,5 +49,3 @@ class ProductAdmin(admin.ModelAdmin):
     )
     list_filter = ('release_date', 'link_chain')
     search_fields = ('name', 'model')
-
-
